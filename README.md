@@ -1,13 +1,6 @@
-# Matching Algorithm
+# Stable Matching Tool
 
 A concurrent Go implementation of a matching algorithm that matches residents to programs based on rank-order lists, available positions, and program preferences.
-
-For example:
-```bash
-go run . 1
-```
-
-uses `Residents1.csv` and `Programs1.csv`.
 
 ## Running
 
