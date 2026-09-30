@@ -248,9 +248,9 @@ func idOfWorstResident(selectedResidents []int, program *Program) int {
 func main() {
 
 	// read residents
-	residentsFile := "residents" + os.Args[1] + ".csv"
+	residentsFile := "data/residents" + os.Args[1] + ".csv"
 	residentsFile = strings.ToUpper(residentsFile[:1]) + residentsFile[1:]
-	programsFile := "programs" + os.Args[1] + ".csv"
+	programsFile := "data/programs" + os.Args[1] + ".csv"
 	programsFile = strings.ToUpper(programsFile[:1]) + programsFile[1:]
 
 	residents, err := ReadResidentsCSV(residentsFile)
