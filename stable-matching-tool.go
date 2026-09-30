@@ -248,8 +248,12 @@ func idOfWorstResident(selectedResidents []int, program *Program) int {
 func main() {
 
 	// read residents
+	residentsFile := "residents" + os.Args[1] + ".csv"
+	residentsFile = strings.ToUpper(residentsFile[:1]) + residentsFile[1:]
+	programsFile := "programs" + os.Args[1] + ".csv"
+	programsFile = strings.ToUpper(programsFile[:1]) + programsFile[1:]
 
-	residents, err := ReadResidentsCSV("residentsLarge.csv")
+	residents, err := ReadResidentsCSV(residentsFile)
 	if err != nil {
 		fmt.Println("Error:", err)
 		return
@@ -260,7 +264,7 @@ func main() {
 		}
 	*/
 
-	programs, err := ReadProgramsCSV("programsLarge.csv")
+	programs, err := ReadProgramsCSV(programsFile)
 	if err != nil {
 		fmt.Println("Error:", err)
 		return
@@ -302,5 +306,5 @@ func main() {
 	fmt.Println()
 	fmt.Printf("Execution time: %s\n", end.Sub(start))
 	fmt.Println()
-	fmt.Println("File: programsLarge.csv and residentsLarge.csv")
+	fmt.Println("File: " + residentsFile + " and " + programsFile)
 }
