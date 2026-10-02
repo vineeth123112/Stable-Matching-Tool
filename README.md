@@ -12,5 +12,4 @@ where size can be small, medium, or large
 The program outputs each resident's match, unmatched residents, available positions, execution time, and input files.
 
 ## Author
-
 Vineeth Ravi
