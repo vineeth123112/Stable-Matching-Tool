@@ -6,11 +6,11 @@ package main
 import (
 	"encoding/csv"
 	"fmt"
+	"net/http"
 	"os"
 	"strconv"
 	"strings"
 	"sync"
-	"time"
 )
 
 // The Resident data type
@@ -245,18 +245,15 @@ func idOfWorstResident(selectedResidents []int, program *Program) int {
 }
 
 // Example usage
-func main() {
+func runMatching(size string) ([]string, string, string) {
 
 	// read residents
-	residentsFile := "data/residents" + os.Args[1] + ".csv"
-	residentsFile = strings.ToUpper(residentsFile[:1]) + residentsFile[1:]
-	programsFile := "data/programs" + os.Args[1] + ".csv"
-	programsFile = strings.ToUpper(programsFile[:1]) + programsFile[1:]
+	residentsFile := "data/residents" + size + ".csv"
+	programsFile := "data/programs" + size + ".csv"
 
 	residents, err := ReadResidentsCSV(residentsFile)
 	if err != nil {
-		fmt.Println("Error:", err)
-		return
+		return nil, "", ""
 	}
 	/*
 		for _, p := range residents {
@@ -267,7 +264,7 @@ func main() {
 	programs, err := ReadProgramsCSV(programsFile)
 	if err != nil {
 		fmt.Println("Error:", err)
-		return
+		return nil, "", ""
 	}
 	/*
 		for _, p := range programs {
@@ -276,35 +273,88 @@ func main() {
 
 		fmt.Printf("\nNMD: %v", programs["NMD"])
 	*/
-	start := time.Now()
+
 	var wg sync.WaitGroup
 	for rid := range residents {
 		wg.Add(1)
 		go offer(rid, residents, programs, &wg)
 	}
 	wg.Wait()
-	end := time.Now()
 
-	fmt.Println()
+	results := []string{}
 	unmatchedResidents := 0
-	fmt.Println("lastname,firstname,residentID,programID,name")
 	for _, resident := range residents {
 		if resident.matchedProgram == "" {
-			fmt.Printf("%s,%s,%d,XXX,NOT_MATCHED\n", resident.lastname, resident.firstname, resident.residentID)
+			results = append(results, fmt.Sprintf(
+				"%s,%s,%d,XXX,NOT_MATCHED\n",
+				resident.lastname,
+				resident.firstname,
+				resident.residentID,
+			))
 			unmatchedResidents++
 		} else {
-			fmt.Printf("%s,%s,%d,%s,%s\n", resident.lastname, resident.firstname, resident.residentID, resident.matchedProgram, programs[resident.matchedProgram].name)
+			results = append(results, fmt.Sprintf(
+				"%s,%s,%d,%s,%s\n",
+				resident.lastname,
+				resident.firstname,
+				resident.residentID,
+				resident.matchedProgram,
+				programs[resident.matchedProgram].name,
+			))
 		}
 	}
-	fmt.Println()
 	positionsAvailable := 0
 	for _, program := range programs {
 		positionsAvailable += program.nPositions - len(program.selectedResidents)
 	}
-	fmt.Printf("Number of unmatched residents: %d\n", unmatchedResidents)
-	fmt.Printf("Number of positions available: %d\n", positionsAvailable)
-	fmt.Println()
-	fmt.Printf("Execution time: %s\n", end.Sub(start))
-	fmt.Println()
-	fmt.Println("File: " + residentsFile + " and " + programsFile)
+
+	return results,
+		fmt.Sprintf("Number of unmatched residents: %d", unmatchedResidents),
+		fmt.Sprintf("Number of positions available: %d", positionsAvailable)
+
+}
+
+func runHandler(w http.ResponseWriter, r *http.Request) {
+	size := r.URL.Query().Get("size")
+
+	results, unmatched, positions := runMatching(size)
+
+	fmt.Fprintln(w, results)
+	fmt.Fprintln(w, unmatched)
+	fmt.Fprintln(w, positions)
+}
+
+func inputHandler(w http.ResponseWriter, r *http.Request) {
+	size := r.URL.Query().Get("size")
+	residentsFile := "data/residents" + size + ".csv"
+	programsFile := "data/programs" + size + ".csv"
+	residents, err := os.ReadFile(residentsFile)
+	programs, err := os.ReadFile(programsFile)
+
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+	fmt.Fprintln(w, "Residents:")
+	fmt.Fprintln(w, string(residents))
+
+	fmt.Fprintln(w, "Programs:")
+	fmt.Fprintln(w, string(programs))
+	// load the appropriate input files here
+}
+
+// Example usage
+func main() {
+	http.HandleFunc("/api/run", runHandler)
+	http.HandleFunc("/api/input", inputHandler)
+
+	http.Handle("/", http.FileServer(http.Dir(".")))
+
+	port := os.Getenv("PORT")
+
+	if port == "" {
+		port = "8080"
+	}
+
+	http.ListenAndServe(":"+port, nil)
 }

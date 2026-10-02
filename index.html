@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Stable Matching</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+    <h1>Stable Matching</h1>
+
+    <div>
+        <label>
+            <input type="radio" name="size" value="small" onchange="showInput()">
+            Small
+        </label>
+
+        <label>
+            <input type="radio" name="size" value="medium" onchange="showInput()">
+            Medium
+        </label>
+
+        <label>
+            <input type="radio" name="size" value="large" onchange="showInput()">
+            Large
+        </label>
+    </div>
+
+    <h2>Input</h2>
+    <div id="input" class="output-box"></div>
+
+    <button onclick="runMatching()">Run Matching</button>
+
+    <h2>Matches</h2>
+    <div id="matches" class="output-box"></div>
+
+    <script src="script.js"></script>
+</body>
+</html>
